@@ -100,7 +100,7 @@ class EtcdTokenCallCredentials(grpc.AuthMetadataPlugin):
 class Etcd3Client(object):
     def __init__(self, host='localhost', port=2379,
                  ca_cert=None, cert_key=None, cert_cert=None, timeout=None,
-                 user=None, password=None):
+                 user=None, password=None, channel_options=None):
 
         self._url = '{host}:{port}'.format(host=host, port=port)
 
@@ -113,7 +113,7 @@ class Etcd3Client(object):
                     cert_cert
                 )
                 self.uses_secure_channel = True
-                self.channel = grpc.secure_channel(self._url, credentials)
+                self.channel = grpc.secure_channel(self._url, credentials, channel_options)
             elif any(cert_params):
                 # some of the cert parameters are set
                 raise ValueError(
@@ -122,10 +122,10 @@ class Etcd3Client(object):
             else:
                 credentials = self._get_secure_creds(ca_cert, None, None)
                 self.uses_secure_channel = True
-                self.channel = grpc.secure_channel(self._url, credentials)
+                self.channel = grpc.secure_channel(self._url, credentials, channel_options)
         else:
             self.uses_secure_channel = False
-            self.channel = grpc.insecure_channel(self._url)
+            self.channel = grpc.insecure_channel(self._url, channel_options)
 
         self.timeout = timeout
         self.call_credentials = None
@@ -943,7 +943,7 @@ class Etcd3Client(object):
 
 def client(host='localhost', port=2379,
            ca_cert=None, cert_key=None, cert_cert=None, timeout=None,
-           user=None, password=None):
+           user=None, password=None, channel_options=None):
     """Return an instance of an Etcd3Client."""
     return Etcd3Client(host=host,
                        port=port,
@@ -952,4 +952,5 @@ def client(host='localhost', port=2379,
                        cert_cert=cert_cert,
                        timeout=timeout,
                        user=user,
-                       password=password)
+                       password=password,
+                       channel_options=channel_options)
